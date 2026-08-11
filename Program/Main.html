@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <!-- INI BARIS AJAIBNYA: Memaksa HP membuka web dalam ukuran Desktop 1440px -->
+    <meta name="viewport" content="width=1440">
+    <title>Dashboard Kinerja - Enterprise System</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="CSS nih.css"> 
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+</head>
+<body>
+
+    <!-- ================= HALAMAN LOGIN ================= -->
+    <div id="login-page">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="logo-box"></div><h2>Dashboard Kinerja</h2><p>Enterprise System Login</p>
+            </div>
+            <div class="login-body">
+                <div id="login-error" class="error-msg"><i class="fa-solid fa-triangle-exclamation"></i> PN atau Password salah!</div>
+                <form onsubmit="handleLogin(event)">
+                    <div class="form-group"><label>Personal Number (PN)</label><input type="text" id="pnInput" required autocomplete="off"></div>
+                    <div class="form-group"><label>Password</label><input type="password" id="passInput" required></div>
+                    <button type="submit" class="btn-login"><i class="fa-solid fa-right-to-bracket"></i> Masuk Sistem</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= DASHBOARD UTAMA ================= -->
+    <div id="dashboard-page">
+        <div class="navbar">
+            <button class="mobile-menu-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+            <div class="logo-box"></div><h1>Dashboard Kinerja</h1><span class="subtitle">Enterprise System</span>
+            <div class="profile-container">
+                <div class="profile-btn" onclick="toggleProfile()"><i class="fa-solid fa-user-shield"></i> <span class="admin-txt">Admin View</span></div>
+                <div class="dropdown-content" id="profileDropdown">
+                    <div class="dropdown-header"><p>Nama: <span>Admin</span></p><p>PN: <span>00123456</span></p></div>
+                    <a class="dropdown-menu-item" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket"></i> Keluar / Logout</a>
+                </div>
+            </div>
+        </div>
+
+        <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+        <div class="app-container">
+            <!-- SIDEBAR -->
+            <div class="sidebar" id="mainSidebar">
+                <!-- GROUP 1: KINERJA AREA -->
+                <div class="sidebar-group">
+                    <div class="sidebar-title">Kinerja Area</div>
+                    <div class="sidebar-menu">
+                        <div class="parent-menu open" onclick="toggleMenu(this)">
+                            <div class="menu-left"><i class="fa-solid fa-chart-line icon-main" style="color: #0857C3;"></i> Kinerja Area</div>
+                            <i class="fa-solid fa-chevron-right caret"></i>
+                        </div>
+                        <ul class="sub-menu" style="display: block;">
+                            <li><a href="#" data-val="ALL" data-type="Kinerja Area" class="active" onclick="setMode(event, this, 'ALL', 'Kinerja Area')"><i class="fa-solid fa-sparkles icon-sub" style="color: #FF8F00;"></i> Dashboard Utama</a></li>
+                            
+                            <li class="has-nested">
+                                <a href="#" class="nested-toggler" onclick="toggleNested(event, this)">
+                                    <span><i class="fa-solid fa-chart-bar icon-sub" style="color: #05CD99;"></i> Daily Performance Area</span>
+                                    <i class="fa-solid fa-chevron-down nested-caret"></i>
+                                </a>
+                                <ul class="nested-menu">
+                                    <li><a href="#" data-val="AREA_1" data-type="Kinerja Area" onclick="setMode(event, this, 'AREA', 'Kinerja Area')">Area 1 Jember</a></li>
+                                    <li><a href="#" data-val="AREA_2" data-type="Kinerja Area" onclick="setMode(event, this, 'AREA', 'Kinerja Area')">Area 2 Probolinggo</a></li>
+                                    <li><a href="#" data-val="AREA_3" data-type="Kinerja Area" onclick="setMode(event, this, 'AREA', 'Kinerja Area')">Area 3 Malang</a></li>
+                                    <li><a href="#" data-val="AREA_4" data-type="Kinerja Area" onclick="setMode(event, this, 'AREA', 'Kinerja Area')">Area 4 Pacitan</a></li>
+                                    <li><a href="#" data-val="AREA_5" data-type="Kinerja Area" onclick="setMode(event, this, 'AREA', 'Kinerja Area')">Area 5 Kediri</a></li>
+                                    <li><a href="#" data-val="AREA_6" data-type="Kinerja Area" onclick="setMode(event, this, 'AREA', 'Kinerja Area')">Area 6 Madiun</a></li>
+                                </ul>
+                            </li>
+                            
+                            <li class="has-nested">
+                                <a href="#" class="nested-toggler" onclick="toggleNested(event, this)">
+                                    <span><i class="fa-solid fa-building-columns icon-sub" style="color: #307FE2;"></i> Daily Performance Cabang</span>
+                                    <i class="fa-solid fa-chevron-down nested-caret"></i>
+                                </a>
+                                <ul class="nested-menu">
+                                    <optgroup label="Area 1 Jember" style="padding: 5px 15px; font-size:0.75rem; color:#0857C3; font-weight:bold;"></optgroup>
+                                    <li><a href="#" data-val="banyuwangi" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Banyuwangi</a></li>
+                                    <li><a href="#" data-val="genteng" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Genteng</a></li>
+                                    <li><a href="#" data-val="bondowoso" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Bondowoso</a></li>
+                                    <li><a href="#" data-val="jember" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Jember</a></li>
+                                    
+                                    <optgroup label="Area 2 Probolinggo" style="padding: 5px 15px; font-size:0.75rem; color:#0857C3; font-weight:bold;"></optgroup>
+                                    <li><a href="#" data-val="situbondo" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Situbondo</a></li>
+                                    <li><a href="#" data-val="lumajang" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Lumajang</a></li>
+                                    <li><a href="#" data-val="probolinggo" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Probolinggo</a></li>
+                                    <li><a href="#" data-val="pasuruan" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Pasuruan</a></li>
+                                    
+                                    <optgroup label="Area 3 Malang" style="padding: 5px 15px; font-size:0.75rem; color:#0857C3; font-weight:bold;"></optgroup>
+                                    <li><a href="#" data-val="malang kawi" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Malang Kawi</a></li>
+                                    <li><a href="#" data-val="malang martadinata" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Malang Martadinata</a></li>
+                                    <li><a href="#" data-val="malang sutoyo" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Malang Sutoyo</a></li>
+                                    <li><a href="#" data-val="kepanjen" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Kepanjen</a></li>
+                                    <li><a href="#" data-val="batu" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Batu</a></li>
+
+                                    <optgroup label="Area 4 Pacitan" style="padding: 5px 15px; font-size:0.75rem; color:#0857C3; font-weight:bold;"></optgroup>
+                                    <li><a href="#" data-val="pacitan" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Pacitan</a></li>
+                                    <li><a href="#" data-val="trenggalek" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Trenggalek</a></li>
+                                    <li><a href="#" data-val="blitar" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Blitar</a></li>
+
+                                    <optgroup label="Area 5 Kediri" style="padding: 5px 15px; font-size:0.75rem; color:#0857C3; font-weight:bold;"></optgroup>
+                                    <li><a href="#" data-val="kediri" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Kediri</a></li>
+                                    <li><a href="#" data-val="pare" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Pare</a></li>
+                                    <li><a href="#" data-val="nganjuk" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Nganjuk</a></li>
+
+                                    <optgroup label="Area 6 Madiun" style="padding: 5px 15px; font-size:0.75rem; color:#0857C3; font-weight:bold;"></optgroup>
+                                    <li><a href="#" data-val="madiun" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Madiun</a></li>
+                                    <li><a href="#" data-val="magetan" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Magetan</a></li>
+                                    <li><a href="#" data-val="ponorogo" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Ponorogo</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- GROUP 2: KINERJA RMFT -->
+                <div class="sidebar-group">
+                    <div class="sidebar-title">Kinerja RMFT</div>
+                    <div class="sidebar-menu">
+                        <ul class="sub-menu" style="display: block; padding-top:0;">
+                            <li><a href="#" data-val="ALL" data-type="Kinerja RMFT" onclick="setMode(event, this, 'ALL', 'Kinerja RMFT')"><i class="fa-solid fa-user-tie icon-sub" style="color: #0857C3;"></i> Profil Kinerja RMFT</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- GROUP 3: FUNDING & TRANSACTION -->
+                <div class="sidebar-group">
+                    <div class="sidebar-title">Funding & Transaction</div>
+                    <div class="sidebar-menu">
+                        <div class="parent-menu" onclick="toggleMenu(this)">
+                            <div class="menu-left"><i class="fa-solid fa-wallet icon-main" style="color: #05CD99;"></i> Funding & Transaction</div>
+                            <i class="fa-solid fa-chevron-right caret"></i>
+                        </div>
+                        <ul class="sub-menu">
+                            <li><a href="#" onclick="switchPage(event, this, 'page-comingsoon')"><i class="fa-solid fa-link icon-sub"></i> Pipeline FT</a></li>
+                            <li><a href="#" onclick="switchPage(event, this, 'page-comingsoon')"><i class="fa-solid fa-calculator icon-sub" style="color: #307FE2;"></i> Dashboard EDC</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KONTEN UTAMA KANAN -->
+            <div class="main-content">
+                
+                <!-- ================= KONTEN 1: KINERJA AREA ================= -->
+                <div id="page-area" class="page-section active-page">
+                    <div class="header-content">
+                        <div class="header-top">
+                            <h2 id="dynamic-title-area">Dashboard Kinerja Area</h2>
+                            <button class="btn-action btn-download"><i class="fa-solid fa-file-arrow-down"></i> Unduh PPT</button>
+                        </div>
+                        
+                        <div class="filters">
+                            <div class="filter-actions">
+                                <button class="btn-action btn-sync" onclick="fetchDataFromGoogleSheets()">
+                                    <i class="fa-solid fa-rotate"></i> Sync Data
+                                </button>
+                                <span id="data-status-area" class="error"><i class="fa-solid fa-link-slash"></i> Offline</span>
+                            </div>
+
+                            <div class="filter-item">
+                                <label class="text-label">AREA</label>
+                                <select id="areaSelectArea" onchange="onTopFilterAreaChange('Kinerja Area')"></select>
+                            </div>
+
+                            <div class="filter-item">
+                                <label class="text-label">CABANG</label>
+                                <select id="cabangSelectArea" onchange="onTopFilterCabangChange('Kinerja Area')">
+                                    <option value="ALL">-- Semua Cabang --</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-item">
+                                <label class="text-label">SEGMEN</label>
+                                <select id="segmentSelect" onchange="renderAreaDashboard()">
+                                    <option value="ALL">Total Konsolidasi</option>
+                                    <option value="Ritel">Ritel</option>
+                                    <option value="Mikro">Mikro</option>
+                                </select>
+                            </div>
+                            
+                            <div class="filter-item">
+                                <label class="text-label">PRODUK GRAFIK</label>
+                                <select id="produkSelect" onchange="renderAreaDashboard()">
+                                    <option value="DPK">DPK (TOTAL)</option>
+                                    <option value="TABUNGAN">Tabungan</option>
+                                    <option value="GIRO">Giro</option>
+                                    <option value="DEPOSITO">Deposito</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-item">
+                                <label class="text-label">PERIODE</label>
+                                <input type="date" id="periodeSelectArea" value="2026-08-05" onchange="renderAreaDashboard()">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="summary-grid">
+                        <div class="sum-card" style="border-top-color: #0857C3;">
+                            <div class="sum-card-header"><h4 style="color:#0857C3;">DPK (Total)</h4><span class="percent" id="pct-dpk" style="background:#e8f0fe; color:#0857C3;">0%</span></div>
+                            <div class="value" id="val-dpk">Rp 0</div>
+                            <div class="mini-stats">
+                                <div class="stat-item"><span>DTD</span><div id="dtd-dpk" class="neutral">-</div></div>
+                                <div class="stat-item"><span>MTD</span><div id="mtd-dpk" class="neutral">-</div></div>
+                                <div class="stat-item"><span>YTD</span><div id="ytd-dpk" class="neutral">-</div></div>
+                                <div class="stat-item"><span>RKA</span><div id="rka-dpk" class="neutral">-</div></div>
+                            </div>
+                        </div>
+                        
+                        <div class="sum-card" style="border-top-color: #FF8F00;">
+                            <div class="sum-card-header"><h4 style="color:#FF8F00;">Tabungan</h4><span class="percent" id="pct-tabungan" style="background:#fff3e0; color:#FF8F00;">0%</span></div>
+                            <div class="value" id="val-tabungan">Rp 0</div>
+                            <div class="mini-stats">
+                                <div class="stat-item"><span>DTD</span><div id="dtd-tabungan" class="neutral">-</div></div>
+                                <div class="stat-item"><span>MTD</span><div id="mtd-tabungan" class="neutral">-</div></div>
+                                <div class="stat-item"><span>YTD</span><div id="ytd-tabungan" class="neutral">-</div></div>
+                                <div class="stat-item"><span>RKA</span><div id="rka-tabungan" class="neutral">-</div></div>
+                            </div>
+                        </div>
+
+                        <div class="sum-card" style="border-top-color: #307FE2;">
+                            <div class="sum-card-header"><h4 style="color:#307FE2;">Giro</h4><span class="percent" id="pct-giro" style="background:#e3f2fd; color:#307FE2;">0%</span></div>
+                            <div class="value" id="val-giro">Rp 0</div>
+                            <div class="mini-stats">
+                                <div class="stat-item"><span>DTD</span><div id="dtd-giro" class="neutral">-</div></div>
+                                <div class="stat-item"><span>MTD</span><div id="mtd-giro" class="neutral">-</div></div>
+                                <div class="stat-item"><span>YTD</span><div id="ytd-giro" class="neutral">-</div></div>
+                                <div class="stat-item"><span>RKA</span><div id="rka-giro" class="neutral">-</div></div>
+                            </div>
+                        </div>
+
+                        <div class="sum-card" style="border-top-color: #05CD99;">
+                            <div class="sum-card-header"><h4 style="color:#05CD99;">Deposito</h4><span class="percent" id="pct-deposito" style="background:#e6fcf5; color:#05CD99;">0%</span></div>
+                            <div class="value" id="val-deposito">Rp 0</div>
+                            <div class="mini-stats">
+                                <div class="stat-item"><span>DTD</span><div id="dtd-deposito" class="neutral">-</div></div>
+                                <div class="stat-item"><span>MTD</span><div id="mtd-deposito" class="neutral">-</div></div>
+                                <div class="stat-item"><span>YTD</span><div id="ytd-deposito" class="neutral">-</div></div>
+                                <div class="stat-item"><span>RKA</span><div id="rka-deposito" class="neutral">-</div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="charts-grid" style="grid-template-columns: 1fr;">
+                        <div class="chart-card">
+                            <h3 id="chart-title" style="color:#0857C3; font-weight:800; font-size: 1.2rem;">Grafik Trend Saldo</h3>
+                            <div class="chart-container" style="height: 320px;"><canvas id="chartTrend"></canvas></div>
+                        </div>
+                    </div>
+
+                    <div class="top5-grid">
+                        <div class="top5-card">
+                            <div class="top5-header" style="color:#FF8F00;">TOP 5 KC - Saldo Tabungan Tertinggi</div>
+                            <ul class="top5-list" id="list-top-tabungan">
+                                <li style="justify-content:center; color:#999;">Menunggu data...</li>
+                            </ul>
+                        </div>
+                        <div class="top5-card">
+                            <div class="top5-header" style="color:#307FE2;">TOP 5 KC - Saldo Giro Tertinggi</div>
+                            <ul class="top5-list" id="list-top-giro">
+                                <li style="justify-content:center; color:#999;">Menunggu data...</li>
+                            </ul>
+                        </div>
+                        <div class="top5-card">
+                            <div class="top5-header" style="color:#05CD99;">TOP 5 KC - Saldo Deposito Tertinggi</div>
+                            <ul class="top5-list" id="list-top-deposito">
+                                <li style="justify-content:center; color:#999;">Menunggu data...</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================= KONTEN 2: KINERJA RMFT ================= -->
+                <div id="page-rmft" class="page-section">
+                    <div class="header-content">
+                        <div class="header-top">
+                            <h2 id="dynamic-title-rmft">Dashboard Kinerja RMFT</h2>
+                            <button class="btn-action btn-download"><i class="fa-solid fa-file-arrow-down"></i> Unduh PPT</button>
+                        </div>
+                        
+                        <div class="filters">
+                            <div class="filter-actions">
+                                <button class="btn-action btn-sync" onclick="fetchDataFromGoogleSheets()">
+                                    <i class="fa-solid fa-rotate"></i> Sync Data
+                                </button>
+                                <span id="data-status-rmft" class="error"><i class="fa-solid fa-link-slash"></i> Offline</span>
+                            </div>
+
+                            <div class="filter-item">
+                                <label class="text-label">AREA</label>
+                                <select id="areaSelectRMFT" onchange="onTopFilterAreaChange('Kinerja RMFT')"></select>
+                            </div>
+
+                            <div class="filter-item">
+                                <label class="text-label">CABANG</label>
+                                <select id="cabangSelectRMFT" onchange="onTopFilterCabangChange('Kinerja RMFT')">
+                                    <option value="ALL">-- Semua Cabang --</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-item">
+                                <label class="text-label">NAMA RMFT</label>
+                                <select id="rmSelect" onchange="renderRMFTDashboard()" style="min-width:250px;">
+                                    <option value="">-- Menunggu Data --</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- LAYOUT RMFT MODERN -->
+                    <div class="rmft-wrapper">
+                        
+                        <!-- KOLOM KIRI: PROFIL -->
+                        <div class="rmft-left">
+                            <div class="rmft-profile-card">
+                                <div class="rmft-profile-header">
+                                    <i class="fa-solid fa-address-card"></i> Profil RMFT
+                                </div>
+                                <div class="rmft-profile-body">
+                                    <div class="rmft-photo-box">
+                                        <div class="rmft-photo-placeholder"><i class="fa-solid fa-user-tie"></i></div>
+                                    </div>
+                                    <table class="rmft-info-table">
+                                        <tr><td class="lbl">Cabang</td><td class="val" id="rm-cabang">-</td></tr>
+                                        <tr><td class="lbl">Nama RM</td><td class="val"><span class="val-highlight" id="rm-nama">-</span></td></tr>
+                                        <tr><td class="lbl">PN</td><td class="val" id="rm-pn">-</td></tr>
+                                        <tr><td class="lbl">Unit Kerja</td><td class="val" id="rm-uker">-</td></tr>
+                                        <tr><td class="lbl">Status</td><td class="val" id="rm-status">-</td></tr>
+                                        <tr><td class="lbl">TMT</td><td class="val" id="rm-tmt">-</td></tr>
+                                        <tr><td class="lbl">Jabatan</td><td class="val" id="rm-jabatan">-</td></tr>
+                                        <tr><td class="lbl">Masa Kerja</td><td class="val" id="rm-masakerja">-</td></tr>
+                                        <tr><td class="lbl">JG / PG</td><td class="val" id="rm-jgpg">-</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <div class="rmft-score-card">
+                                <div class="rmft-score-title"><i class="fa-solid fa-star" style="color:#ffeb3b;"></i> Score Total</div>
+                                <div class="rmft-score-val" id="rm-score">0.00</div>
+                                <div class="rmft-tier-box" id="rm-tier">Tier -</div>
+                            </div>
+                        </div>
+
+                        <!-- KOLOM KANAN: GRID KPI -->
+                        <div class="rmft-right">
+                            <div class="rmft-main-title">Rincian Pencapaian Produktivitas RMFT</div>
+                            
+                            <div class="rmft-kpi-grid">
+                                <!-- Row 1 -->
+                                <div class="kpi-box">
+                                    <div class="kpi-head blue"><span>Daily Avg. DPK</span><span><span id="rm-p-dpk">0%</span> | <span id="rm-s-dpk">0</span></span></div>
+                                    <div class="kpi-body">
+                                        <div class="kpi-body-col"><div class="kpi-row"><span class="lbl">Realisasi</span><span class="val kpi-val-realisasi" id="rm-r-dpk">0</span></div></div>
+                                        <div class="kpi-body-col"><div class="kpi-row"><span class="lbl">Target</span><span class="val" id="rm-t-dpk">0</span></div></div>
+                                    </div>
+                                </div>
+                                <div class="kpi-box">
+                                    <div class="kpi-head orange"><span>Saldo Tabungan</span><span><span id="rm-p-saltab">0%</span> | <span id="rm-s-saltab">0</span></span></div>
+                                    <div class="kpi-body">
+                                        <div class="kpi-body-col"><div class="kpi-row"><span class="lbl">Realisasi</span><span class="val kpi-val-realisasi" id="rm-r-saltab">0</span></div></div>
+                                        <div class="kpi-body-col"><div class="kpi-row"><span class="lbl">Target</span><span class="val" id="rm-t-saltab">0</span></div></div>
+                                    </div>
+                                </div>
+                                <div class="kpi-box">
+                                    <div class="kpi-head green"><span>Avg. CASA Merch</span><span><span id="rm-p-avgcasa">0%</span> | <span id="rm-s-avgcasa">0</span></span></div>
+                                    <div class="kpi-body">
+                                        <div class="kpi-body-col"><div class="kpi-row"><span class="lbl">Realisasi</span><span class="val kpi-val-realisasi" id="rm-r-avgcasa">0</span></div></div>
+                                        <div class="kpi-body-col"><div class="kpi-row"><span class="lbl">Target</span><span class="val" id="rm-t-avgcasa">0</span></div></div>
+                                    </div>
+                                </div>
+                                <div class="kpi-box">
+                                    <div class="kpi-head red"><span>User Aktif BRImo</span><span><span id="rm-p-brimo">0%</span> | <span id="rm-s-brimo">0</span></span></div>
+                                    <div class="kpi-body">
+                                        <div class="kpi-body-col"><div class="kpi-row"><span class="lbl">Realisasi</span><span class="val kpi-val-realisasi" id="rm-r-brimo">0</span></div></div>
+                                        <div class="kpi-body-col"><div class="kpi-row"><span class="lbl">Target</span><span class="val" id="rm-t-brimo">0</span></div></div>
+                                    </div>
+                                </div>
+
+                                <!-- Row 2 -->
+                                <div class="kpi-box">
+                                    <div class="kpi-head blue"><span>Daily Avg. Giro</span><span><span id="rm-p-avg-giro">0%</span> | <span id="rm-s-avg-giro">0</span></span></div>
+                                    <div class="kpi-body">
+                                        <div class="kpi-body-col"><div class="kpi-row"><span class="lbl">Realisasi</span><span class="val kpi-val-realisasi" id="rm-r-avg-giro">0</span></div></div>
+                                        <div class="kpi-body-col"><div class="kpi-row"><span class="lbl">Target</span><span class="val" id="rm-t-avg-giro">0</span></div></div>
+                                    </div>
+                                </div>
+                                <div class="kpi-box">
+                                    <div class="kpi-head orange"><span>SV Merchant EDC</span><span><span id="rm-p-sv-edc">0%</span> | <span id="rm-s-sv-edc">0</span></span></div>
+                                    <div class="kpi-body">
+                                        <div class="kpi-body-col"><div class="kpi-row"><span class="lbl">Realisasi</span><span class="val kpi-val-realisasi" id="rm-r-sv-edc">0</span></div></div>
+                                        <div class="kpi-body-col"><div class="kpi-row"><span class="lbl">Target</span><span class="val" id="rm-t-sv-edc">0</span></div></div>
+                                    </div>
+                                </div>
+                                <div class="kpi-box">
+                                    <div class="kpi-head green"><span>Merchant EDC Prod</span><span><span id="rm-p-edc-prod">0%</span> | <span id="rm-s-edc-prod">0</span></span></div>
+                                    <div class="kpi-body">
+                                        <div class="kpi-body-col"><div class="kpi-row"><span class="lbl">Realisasi</span><span class="val kpi-val-realisasi" id="rm-r-edc-prod">0</span></div></div>
+                                        <div class="kpi-body-col"><div class="kpi-row"><span class="lbl">Target</span><span class="val" id="rm-t-edc-prod">0</span></div></div>
+                                    </div>
+                                </div>
+                                <div class="kpi-box">
+                                    <div class="kpi-head red"><span>User Aktif QLOLA</span><span><span id="rm-p-qlola">0%</span> | <span id="rm-s-qlola">0</span></span></div>
+                                    <div class="kpi-body">
+                                        <div class="kpi-body-col"><div class="kpi-row"><span class="lbl">Realisasi</span><span class="val kpi-val-realisasi" id="rm-r-qlola">0</span></div></div>
+                                        <div class="kpi-body-col"><div class="kpi-row"><span class="lbl">Target</span><span class="val" id="rm-t-qlola">0</span></div></div>
+                                    </div>
+                                </div>
+
+                                <!-- Row 3 -->
+                                <div class="kpi-box">
+                                    <div class="kpi-head blue"><span>Daily Avg. Tab</span><span><span id="rm-p-avg-tab">0%</span> | <span id="rm-s-avg-tab">0</span></span></div>
+                                    <div class="kpi-body">
+                                        <div class="kpi-body-col"><div class="kpi-row"><span class="lbl">Realisasi</span><span class="val kpi-val-realisasi" id="rm-r-avg-tab">0</span></div></div>
+                                        <div class="kpi-body-col"><div class="kpi-row"><span class="lbl">Target</span><span class="val" id="rm-t-avg-tab">0</span></div></div>
+                                    </div>
+                                </div>
+                                <div class="kpi-box">
+                                    <div class="kpi-head orange"><span>SV Merchant QRIS</span><span><span id="rm-p-sv-qris">0%</span> | <span id="rm-s-sv-qris">0</span></span></div>
+                                    <div class="kpi-body">
+                                        <div class="kpi-body-col"><div class="kpi-row"><span class="lbl">Realisasi</span><span class="val kpi-val-realisasi" id="rm-r-sv-qris">0</span></div></div>
+                                        <div class="kpi-body-col"><div class="kpi-row"><span class="lbl">Target</span><span class="val" id="rm-t-sv-qris">0</span></div></div>
+                                    </div>
+                                </div>
+                                <div class="kpi-box">
+                                    <div class="kpi-head green"><span>Merchant QRIS Prod</span><span><span id="rm-p-qris-prod">0%</span> | <span id="rm-s-qris-prod">0</span></span></div>
+                                    <div class="kpi-body">
+                                        <div class="kpi-body-col"><div class="kpi-row"><span class="lbl">Realisasi</span><span class="val kpi-val-realisasi" id="rm-r-qris-prod">0</span></div></div>
+                                        <div class="kpi-body-col"><div class="kpi-row"><span class="lbl">Target</span><span class="val" id="rm-t-qris-prod">0</span></div></div>
+                                    </div>
+                                </div>
+                                <div class="kpi-box">
+                                    <div class="kpi-head red"><span>Product Holding</span><span><span id="rm-p-holding">0%</span> | <span id="rm-s-holding">0</span></span></div>
+                                    <div class="kpi-body">
+                                        <div class="kpi-body-col"><div class="kpi-row"><span class="lbl">Realisasi</span><span class="val kpi-val-realisasi" id="rm-r-holding">0</span></div></div>
+                                        <div class="kpi-body-col"><div class="kpi-row"><span class="lbl">Target</span><span class="val" id="rm-t-holding">0</span></div></div>
+                                    </div>
+                                </div>
+
+                                <!-- Row 4 -->
+                                <div class="kpi-box">
+                                    <div class="kpi-head blue"><span>New Payroll</span><span><span id="rm-p-payroll">0%</span> | <span id="rm-s-payroll">0</span></span></div>
+                                    <div class="kpi-body">
+                                        <div class="kpi-body-col"><div class="kpi-row"><span class="lbl">Realisasi</span><span class="val kpi-val-realisasi" id="rm-r-payroll">0</span></div></div>
+                                        <div class="kpi-body-col"><div class="kpi-row"><span class="lbl">Target</span><span class="val" id="rm-t-payroll">0</span></div></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- KPI BOBOT & PENILAIAN -->
+                            <div class="kpi-bobot-container">
+                                <div class="kpi-bobot-title">Key Performance Indicator & Bobot Penilaian</div>
+                                <div class="kpi-bobot-body">
+                                    <div class="kb-col">
+                                        <div class="kb-row"><div class="kb-pct empty" id="b-dpk"><i class="fa-solid fa-minus"></i></div><div class="kb-name">Daily Average DPK Retail</div></div>
+                                        <div class="kb-row"><div class="kb-pct empty" id="b-giro"><i class="fa-solid fa-minus"></i></div><div class="kb-name">Daily Average Giro Retail</div></div>
+                                        <div class="kb-row"><div class="kb-pct empty" id="b-tab"><i class="fa-solid fa-minus"></i></div><div class="kb-name">Daily Average Tabungan</div></div>
+                                        <div class="kb-row"><div class="kb-pct empty" id="b-payroll"><i class="fa-solid fa-minus"></i></div><div class="kb-name">New Account Payroll</div></div>
+                                        <div class="kb-row"><div class="kb-pct empty" id="b-saltab"><i class="fa-solid fa-minus"></i></div><div class="kb-name">Posisi Saldo Tabungan</div></div>
+                                    </div>
+                                    <div class="kb-col">
+                                        <div class="kb-row"><div class="kb-pct empty" id="b-casa-edc"><i class="fa-solid fa-minus"></i></div><div class="kb-name">Daily Average CASA EDC Merchant</div></div>
+                                        <div class="kb-row"><div class="kb-pct empty" id="b-edc-prod"><i class="fa-solid fa-minus"></i></div><div class="kb-name">Jumlah Merchant EDC Produktif</div></div>
+                                        <div class="kb-row"><div class="kb-pct empty" id="b-qris-prod"><i class="fa-solid fa-minus"></i></div><div class="kb-name">Jumlah Merchant QRIS Produktif</div></div>
+                                        <div class="kb-row"><div class="kb-pct empty" id="b-holding"><i class="fa-solid fa-minus"></i></div><div class="kb-name">Product Holding</div></div>
+                                    </div>
+                                    <div class="kb-col">
+                                        <div class="kb-row"><div class="kb-pct empty" id="b-sv-edc"><i class="fa-solid fa-minus"></i></div><div class="kb-name">Sales Volume Merchant EDC</div></div>
+                                        <div class="kb-row"><div class="kb-pct empty" id="b-sv-qris"><i class="fa-solid fa-minus"></i></div><div class="kb-name">Sales Volume Merchant QRIS</div></div>
+                                        <div class="kb-row"><div class="kb-pct empty" id="b-qlola"><i class="fa-solid fa-minus"></i></div><div class="kb-name">User Aktif QLOLA</div></div>
+                                        <div class="kb-row"><div class="kb-pct empty" id="b-brimo"><i class="fa-solid fa-minus"></i></div><div class="kb-name">Jumlah User Aktif BRImo</div></div>
+                                    </div>
+                                    <div class="kb-col">
+                                         <div class="kb-grade-box">
+                                              <div class="kb-grade-title">Grade</div>
+                                              <div class="kb-grade-grid">
+                                                  <div><b>Poin 4:</b> >/= 100%</div> <div><b>Tier 1:</b> Total Nilai >/= 3.00</div>
+                                                  <div><b>Poin 3:</b> > 85.0% - &lt; 100%</div> <div><b>Tier 2:</b> Total Nilai > 2.50 - &lt; 3.00</div>
+                                                  <div><b>Poin 2:</b> >/= 65% - &lt;/= 85%</div> <div><b>Tier 3:</b> Total Nilai >/= 2.00 - &lt;/= 2.50</div>
+                                                  <div><b>Poin 1:</b> &lt; 65%</div> <div><b>Tier 4:</b> Total Nilai &lt; 2.00</div>
+                                              </div>
+                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div id="page-comingsoon" class="page-section">
+                    <div class="header-content"><h2>Modul Dalam Pengembangan</h2></div>
+                    <div class="card">
+                        <div class="card-body empty-state"><i class="fa-solid fa-server"></i><h3>Fitur Ini Akan Segera Hadir</h3></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- MEMANGGIL FILE JAVASCRIPT MILIKMU -->
+    <script src="JAWA.js"></script>
+</body>
+</html>
