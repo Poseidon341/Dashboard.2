@@ -3,6 +3,11 @@ const SPREADSHEET_ID_AREA = '1u5iAIbYnBx82_O5E5-qkvaaLfFkPA28ZDFsnNqkpNiI';
 const SPREADSHEET_ID_RMFT = '1QcmScgfkySEFbXESFDdItlloz5vWLtjVT8VptV6O8z8'; 
 const GID_RMFT = '689362966'; 
 
+// ================= ID SPREADSHEET LOGIN =================
+const SPREADSHEET_ID_LOGIN = '1wK2Uj1yyqkm17R9cIQrdZhXrwblcM3gmaiGI6k5IVgs';
+const GID_LOGIN = '1611212161';
+let loginAttemptPN = '';
+
 let globalDataArea = [];
 let globalDataRMFT = [];
 
@@ -137,6 +142,8 @@ function setMode(e, el, mode, dashboardType) {
         document.getElementById('page-area').classList.add('active-page');
         renderAreaDashboard();
     }
+    
+    if (window.innerWidth <= 1024) toggleSidebar();
 }
 
 function onTopFilterAreaChange(dashboardType) {
@@ -197,28 +204,106 @@ function syncSidebarMenu() {
     }
 }
 
-// ================= UI LOGIN & BASIC =================
+// ================= UI LOGIN DINAMIS =================
+function showLoginError(msg) {
+    const err = document.getElementById('login-error');
+    err.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${msg}`;
+    err.style.display = 'block';
+}
+
+function resetLoginBtn() {
+    const btn = document.getElementById('btnLoginBtn');
+    btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Masuk Sistem';
+    btn.disabled = false;
+}
+
+function handleLogin(e) {
+    e.preventDefault();
+    loginAttemptPN = document.getElementById('pnInput').value.trim();
+    let loginAttemptPass = document.getElementById('passInput').value.trim();
+
+    if (loginAttemptPass !== 'BRI') {
+        showLoginError("Password salah! (Gunakan: BRI)");
+        return;
+    }
+
+    const btn = document.getElementById('btnLoginBtn');
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memeriksa Data...';
+    btn.disabled = true;
+    document.getElementById('login-error').style.display = 'none';
+
+    const scriptLogin = document.createElement('script');
+    scriptLogin.src = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID_LOGIN}/gviz/tq?gid=${GID_LOGIN}&tqx=responseHandler:prosesDataLogin`;
+    scriptLogin.onerror = () => { 
+        showLoginError("Gagal terhubung ke database. Cek setting 'Share' di Google Sheets!"); 
+        resetLoginBtn(); 
+    };
+    document.body.appendChild(scriptLogin);
+}
+
+window.prosesDataLogin = function(json) {
+    resetLoginBtn();
+    
+    if (!json || json.status === 'error') {
+        showLoginError("Gagal membaca database user!");
+        return;
+    }
+
+    let userData = extractActualData(json, 'pn', 'nama'); 
+    
+    if(userData.length === 0) {
+        showLoginError("Tabel database kosong atau format salah!");
+        return;
+    }
+
+    let keys = Object.keys(userData[0]);
+    let keyPn = keys.find(k => k.toLowerCase() === 'pn' || k.toLowerCase().includes('pn'));
+    let keyNama = keys.find(k => k.toLowerCase() === 'nama' || k.toLowerCase().includes('nama'));
+
+    let foundUser = userData.find(row => safeStr(row[keyPn]) === loginAttemptPN);
+
+    if (foundUser) {
+        localStorage.setItem('bri_dashboard_auth', 'true');
+        localStorage.setItem('bri_user_nama', safeStr(foundUser[keyNama]));
+        localStorage.setItem('bri_user_pn', loginAttemptPN);
+        document.getElementById('login-error').style.display = 'none';
+        
+        checkAuth(); 
+    } else {
+        showLoginError("PN Anda tidak terdaftar di sistem!");
+    }
+}
+
 function checkAuth() {
     if (localStorage.getItem('bri_dashboard_auth') === 'true') {
         document.getElementById('login-page').style.display = 'none';
         document.getElementById('dashboard-page').style.display = 'block';
+        
+        let namaUser = localStorage.getItem('bri_user_nama') || 'Admin View';
+        let pnUser = localStorage.getItem('bri_user_pn') || '00123456';
+        
+        let namaPendek = namaUser.split(' ').slice(0, 2).join(' ');
+        
+        document.getElementById('display-nama-header').innerText = namaPendek; 
+        document.getElementById('display-nama-dropdown').innerText = namaUser;
+        document.getElementById('display-pn-dropdown').innerText = pnUser;
+
         initDropdowns(); 
-        if (!chartTrend) initCharts();
+        if (!chartTabungan) initCharts(); 
         fetchDataFromGoogleSheets(); 
     } else {
         document.getElementById('login-page').style.display = 'flex';
         document.getElementById('dashboard-page').style.display = 'none';
     }
 }
-function handleLogin(e) {
-    e.preventDefault();
-    if (document.getElementById('pnInput').value === '00123456' && document.getElementById('passInput').value === 'admin') {
-        document.getElementById('login-error').style.display = 'none'; localStorage.setItem('bri_dashboard_auth', 'true'); checkAuth();
-    } else { document.getElementById('login-error').style.display = 'block'; }
-}
+
 function handleLogout() {
-    localStorage.removeItem('bri_dashboard_auth'); checkAuth();
+    localStorage.removeItem('bri_dashboard_auth');
+    localStorage.removeItem('bri_user_nama');
+    localStorage.removeItem('bri_user_pn');
+    checkAuth();
 }
+
 function toggleProfile() { document.getElementById("profileDropdown").classList.toggle("show"); }
 function toggleMenu(el) {
     const isOpen = el.classList.contains("open");
@@ -238,42 +323,89 @@ function switchPage(e, el, targetPageId) {
     el.classList.add('active');
     document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active-page'));
     document.getElementById(targetPageId).classList.add('active-page');
+    if (window.innerWidth <= 1024) toggleSidebar();
 }
 
-// ================= GRAFIK AREA =================
-Chart.register(ChartDataLabels); 
-let chartTrend; 
+function toggleSidebar() {
+    const sidebar = document.getElementById("mainSidebar");
+    const overlay = document.getElementById("sidebar-overlay");
+    if (sidebar.classList.contains("show")) {
+        sidebar.classList.remove("show");
+        overlay.style.display = "none";
+    } else {
+        sidebar.classList.add("show");
+        overlay.style.display = "block";
+    }
+}
 
-function initCharts() {
-    const ctxTrend = document.getElementById('chartTrend').getContext('2d');
-    chartTrend = new Chart(ctxTrend, {
+// ================= INISIASI 4 GRAFIK TIME SERIES =================
+Chart.register(ChartDataLabels); 
+let chartTabungan, chartGiro, chartDeposito, chartDPK; 
+
+function createTimeSeriesChart(canvasId, titleColor) {
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    const labels1to31 = Array.from({length: 31}, (_, i) => i + 1);
+    
+    return new Chart(ctx, {
         type: 'line',
-        data: { labels: [], datasets: [{ label: 'Trend Saldo', data: [], borderColor: '#0857C3', backgroundColor: 'rgba(8, 87, 195, 0.1)', borderWidth: 3, pointRadius: 6, pointHoverRadius: 8, pointBackgroundColor: '#0857C3', fill: true, tension: 0.4 }]},
-        options: { 
-            responsive: true, maintainAspectRatio: false, 
-            layout: { padding: { top: 35, right: 30, left: 20, bottom: 10 } },
-            plugins: { 
-                legend: { display: false }, 
-                datalabels: { align: 'top', anchor: 'end', offset: 5, color: '#0857C3', font: { weight: 'bold', size: 10 },
+        data: {
+            labels: labels1to31,
+            datasets: [
+                { label: 'Dec-25', data: [], borderColor: '#05CD99', backgroundColor: 'transparent', borderWidth: 2.5, pointRadius: 3, tension: 0.3 },
+                { label: 'Jun-26', data: [], borderColor: '#307FE2', backgroundColor: 'transparent', borderWidth: 2.5, pointRadius: 3, tension: 0.3 },
+                { label: 'Jul-26', data: [], borderColor: '#EE5D50', backgroundColor: 'transparent', borderWidth: 2.5, pointRadius: 3, tension: 0.3 },
+                { label: 'Aug-26', data: [], borderColor: '#4b5563', backgroundColor: 'transparent', borderWidth: 2.5, pointRadius: 3, tension: 0.3 }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            layout: { padding: { top: 25, right: 20, left: 10, bottom: 5 } },
+            plugins: {
+                legend: { 
+                    display: true, 
+                    position: 'bottom', 
+                    labels: { boxWidth: 15, font: { size: 11, weight: 'bold' } } 
+                },
+                datalabels: {
+                    display: function(context) {
+                        return context.dataIndex === 0 || context.dataIndex === context.dataset.data.length - 1;
+                    },
+                    align: 'top',
+                    color: titleColor,
+                    font: { weight: 'bold', size: 10 },
                     formatter: function(value) {
                         if(!value) return '';
-                        if(value >= 1000000000000) return (value / 1000000000000).toFixed(2) + ' T';
-                        if(value >= 1000000000) return (value / 1000000000).toFixed(2) + ' M';
-                        if(value >= 1000000) return (value / 1000000).toFixed(2) + ' Jt';
+                        if(value >= 1000000) return (value / 1000000).toFixed(1) + ' Jt';
                         return value.toLocaleString('id-ID');
                     }
                 }
-            }, 
-            scales: { 
-                x: { grid: { display: true, color: '#e0e0e0', drawBorder: false }, ticks: { font: { size: 10, weight: 'bold' } } },
-                y: { display: false, beginAtZero: false } 
-            }, 
-            animation: { duration: 800 } 
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' } } },
+                y: { 
+                    display: true, 
+                    grid: { color: '#e0e5f2' },
+                    ticks: { 
+                        font: { size: 10 }, 
+                        callback: function(value) { return value >= 1000000 ? (value / 1000000) + 'M' : value; } 
+                    } 
+                }
+            },
+            animation: { duration: 800 }
         }
     });
 }
 
-// ================= TARIK DATA API =================
+function initCharts() {
+    chartTabungan = createTimeSeriesChart('chartTabungan', '#FF8F00');
+    chartGiro = createTimeSeriesChart('chartGiro', '#307FE2');
+    chartDeposito = createTimeSeriesChart('chartDeposito', '#05CD99');
+    chartDPK = createTimeSeriesChart('chartDPK', '#0857C3');
+}
+
+// ================= TARIK DATA API AREA & RMFT =================
 function fetchDataFromGoogleSheets() {
     const statusArea = document.getElementById('data-status-area');
     const statusRMFT = document.getElementById('data-status-rmft');
@@ -310,11 +442,12 @@ window.prosesDataRMFT = function(json) {
     if(currentDashboardType === 'Kinerja RMFT') populateRMDataList();
 }
 
-// ================= RENDER DASHBOARD AREA =================
-function renderTop5List(data, elementId, colorClass) {
+// ================= RENDER DASHBOARD AREA & LOGIKA TOP 5 =================
+function renderTop5List(data, elementId, colorClass, isHigh = true) {
     const ul = document.getElementById(elementId);
     ul.innerHTML = '';
     if(data.length === 0) { ul.innerHTML = '<li style="justify-content:center; color:#999; font-style:italic;">Data cabang spesifik belum tersedia di tabel</li>'; return; }
+    
     data.forEach((item, index) => {
         let displayVal = "";
         if(item.saldo >= 1000000000000) displayVal = (item.saldo / 1000000000000).toFixed(2) + ' Triliun';
@@ -323,7 +456,15 @@ function renderTop5List(data, elementId, colorClass) {
         else displayVal = item.saldo.toLocaleString('id-ID');
 
         const li = document.createElement('li');
-        li.innerHTML = `<span class="cabang-name"><i class="fa-solid fa-medal" style="${index===0?'color:#FF8F00;':index===1?'color:#c0c0c0;':index===2?'color:#cd7f32;':''}"></i> ${item.cabang}</span><span class="cabang-val" style="color:${colorClass};">Rp ${displayVal}</span>`;
+        
+        let iconHtml = '';
+        if (isHigh) {
+            iconHtml = `<i class="fa-solid fa-medal" style="${index===0?'color:#FF8F00;':index===1?'color:#c0c0c0;':index===2?'color:#cd7f32;':''}"></i>`;
+        } else {
+            iconHtml = `<i class="fa-solid fa-circle-down" style="color:#ee5d50;"></i>`;
+        }
+
+        li.innerHTML = `<span class="cabang-name">${iconHtml} ${item.cabang}</span><span class="cabang-val" style="color:${colorClass};">Rp ${displayVal}</span>`;
         ul.appendChild(li);
     });
 }
@@ -332,7 +473,6 @@ function renderAreaDashboard() {
     if (globalDataArea.length === 0) return;
 
     const filterSegmen = document.getElementById('segmentSelect').value; 
-    const selectedProduk = document.getElementById('produkSelect').value;
     const rawDate = document.getElementById('periodeSelectArea').value; 
     
     let dateTarget1 = "", dateTarget2 = "";
@@ -368,8 +508,8 @@ function renderAreaDashboard() {
     if (!keySaldo && dpkKeys.length > 0) keySaldo = dpkKeys[dpkKeys.length - 1]; 
     
     let deltaKeys = keys.filter(k => k.toLowerCase().match(/delta vs/));
-    let keyRkaDelta = deltaKeys.find(k => k.toLowerCase().match(/rka/));
-    let timeDeltas = deltaKeys.filter(k => !k.toLowerCase().match(/rka/));
+    let keyYOY = deltaKeys.find(k => k.toLowerCase().match(/yoy|year/));
+    let timeDeltas = deltaKeys.filter(k => !k.toLowerCase().match(/rka|yoy/));
     let keyYTD = timeDeltas.find(k => k.toLowerCase().match(/dec/)) || timeDeltas[0];
     let keyMTD = timeDeltas.find(k => k.toLowerCase().match(/jul|jun|sep|okt|nov|apr|may|mar|feb|jan/)) || timeDeltas[1] || timeDeltas[0];
     let keyDTD = timeDeltas.find(k => k.includes(dateTarget1) || k.includes(dateTarget2));
@@ -380,8 +520,15 @@ function renderAreaDashboard() {
 
     let hasKanwilRow = globalDataArea.some(r => safeStr(r[keyArea]).toUpperCase().includes('TOTAL KANWIL'));
 
-    let totals = { dpk: { saldo:0, dtd:0, mtd:0, ytd:0, rkaDelta:0, rkaTarget:0 }, tabungan: { saldo:0, dtd:0, mtd:0, ytd:0, rkaDelta:0, rkaTarget:0 }, giro: { saldo:0, dtd:0, mtd:0, ytd:0, rkaDelta:0, rkaTarget:0 }, deposito: { saldo:0, dtd:0, mtd:0, ytd:0, rkaDelta:0, rkaTarget:0 } };
-    let cabangTabungan = {}, cabangGiro = {}, cabangDeposito = {};
+    let totals = { dpk: { saldo:0, dtd:0, mtd:0, ytd:0, yoy:0, rkaTarget:0 }, tabungan: { saldo:0, dtd:0, mtd:0, ytd:0, yoy:0, rkaTarget:0 }, giro: { saldo:0, dtd:0, mtd:0, ytd:0, yoy:0, rkaTarget:0 }, deposito: { saldo:0, dtd:0, mtd:0, ytd:0, yoy:0, rkaTarget:0 } };
+    
+    // Siapkan object untuk menampung saldo per cabang
+    let cabangData = {
+        tabungan: {},
+        giro: {},
+        deposito: {},
+        dpk: {}
+    };
 
     globalDataArea.forEach(row => {
         let valArea = safeStr(row[keyArea]).toUpperCase();
@@ -399,11 +546,10 @@ function renderAreaDashboard() {
         let dtd = cleanNum(row[keyDTD], multiplier);
         let mtd = cleanNum(row[keyMTD], multiplier);
         let ytd = cleanNum(row[keyYTD], multiplier);
-        let rkaDelta = cleanNum(row[keyRkaDelta], multiplier);
+        let yoy = keyYOY ? cleanNum(row[keyYOY], multiplier) : 0;
         
         let rkaTarget = 0;
         if(row[keyRkaPct]) { let pctAsli = cleanNum(row[keyRkaPct], 1); if(pctAsli > 0) rkaTarget = saldo / (pctAsli / 100); } 
-        else { rkaTarget = saldo - rkaDelta; }
         
         let cleanCabang = valArea.replace(/KC /gi, '').replace(/\(.*\)/g, '').trim();
 
@@ -414,11 +560,11 @@ function renderAreaDashboard() {
             else matchAreaForTotals = valArea.toLowerCase().includes(currentTarget.toLowerCase());
 
             if (matchAreaForTotals && !valParentStr) {
-                if (valRowLabel.includes('tabungan')) { totals.tabungan.saldo+=saldo; totals.tabungan.dtd+=dtd; totals.tabungan.mtd+=mtd; totals.tabungan.ytd+=ytd; totals.tabungan.rkaDelta+=rkaDelta; totals.tabungan.rkaTarget+=rkaTarget; }
-                else if (valRowLabel.includes('giro')) { totals.giro.saldo+=saldo; totals.giro.dtd+=dtd; totals.giro.mtd+=mtd; totals.giro.ytd+=ytd; totals.giro.rkaDelta+=rkaDelta; totals.giro.rkaTarget+=rkaTarget;}
-                else if (valRowLabel.includes('deposito')) { totals.deposito.saldo+=saldo; totals.deposito.dtd+=dtd; totals.deposito.mtd+=mtd; totals.deposito.ytd+=ytd; totals.deposito.rkaDelta+=rkaDelta; totals.deposito.rkaTarget+=rkaTarget;}
+                if (valRowLabel.includes('tabungan')) { totals.tabungan.saldo+=saldo; totals.tabungan.dtd+=dtd; totals.tabungan.mtd+=mtd; totals.tabungan.ytd+=ytd; totals.tabungan.yoy+=yoy; totals.tabungan.rkaTarget+=rkaTarget; }
+                else if (valRowLabel.includes('giro')) { totals.giro.saldo+=saldo; totals.giro.dtd+=dtd; totals.giro.mtd+=mtd; totals.giro.ytd+=ytd; totals.giro.yoy+=yoy; totals.giro.rkaTarget+=rkaTarget;}
+                else if (valRowLabel.includes('deposito')) { totals.deposito.saldo+=saldo; totals.deposito.dtd+=dtd; totals.deposito.mtd+=mtd; totals.deposito.ytd+=ytd; totals.deposito.yoy+=yoy; totals.deposito.rkaTarget+=rkaTarget;}
                 
-                totals.dpk.saldo+=saldo; totals.dpk.dtd+=dtd; totals.dpk.mtd+=mtd; totals.dpk.ytd+=ytd; totals.dpk.rkaDelta+=rkaDelta; totals.dpk.rkaTarget+=rkaTarget;
+                totals.dpk.saldo+=saldo; totals.dpk.dtd+=dtd; totals.dpk.mtd+=mtd; totals.dpk.ytd+=ytd; totals.dpk.yoy+=yoy; totals.dpk.rkaTarget+=rkaTarget;
             }
         }
 
@@ -429,9 +575,18 @@ function renderAreaDashboard() {
             else matchAreaForTop5 = valArea.toLowerCase().includes(currentTarget.toLowerCase());
 
             if (matchAreaForTop5 && !valParentStr) {
-                if (valRowLabel.includes('tabungan')) cabangTabungan[cleanCabang] = (cabangTabungan[cleanCabang] || 0) + saldo;
-                if (valRowLabel.includes('giro')) cabangGiro[cleanCabang] = (cabangGiro[cleanCabang] || 0) + saldo;
-                if (valRowLabel.includes('deposito')) cabangDeposito[cleanCabang] = (cabangDeposito[cleanCabang] || 0) + saldo;
+                if (valRowLabel.includes('tabungan')) {
+                    cabangData.tabungan[cleanCabang] = (cabangData.tabungan[cleanCabang] || 0) + saldo;
+                    cabangData.dpk[cleanCabang] = (cabangData.dpk[cleanCabang] || 0) + saldo;
+                }
+                if (valRowLabel.includes('giro')) {
+                    cabangData.giro[cleanCabang] = (cabangData.giro[cleanCabang] || 0) + saldo;
+                    cabangData.dpk[cleanCabang] = (cabangData.dpk[cleanCabang] || 0) + saldo;
+                }
+                if (valRowLabel.includes('deposito')) {
+                    cabangData.deposito[cleanCabang] = (cabangData.deposito[cleanCabang] || 0) + saldo;
+                    cabangData.dpk[cleanCabang] = (cabangData.dpk[cleanCabang] || 0) + saldo;
+                }
             }
         }
     });
@@ -442,10 +597,11 @@ function renderAreaDashboard() {
         if(num >= 1000000) return (num / 1000000).toFixed(2) + ' Jt';
         return num.toLocaleString('id-ID');
     };
+    
     const formatDelta = (val) => {
-        if(Math.abs(val) < 0.01) return `<div class="neutral">-</div>`;
+        if(Math.abs(val) < 0.01) return `<div class="val-delta neutral">-</div>`;
         let isPos = val >= 0;
-        return `<div class="${isPos?'up':'down'}"><i class="fa-solid ${isPos?'fa-caret-up':'fa-caret-down'}"></i> ${isPos?'+':'-'}${formatUangShort(Math.abs(val))}</div>`;
+        return `<div class="val-delta ${isPos?'up':'down'}"><i class="fa-solid ${isPos?'fa-caret-up':'fa-caret-down'}"></i> ${formatUangShort(Math.abs(val))}</div>`;
     };
 
     ['dpk', 'tabungan', 'giro', 'deposito'].forEach(cat => {
@@ -454,70 +610,70 @@ function renderAreaDashboard() {
         document.getElementById(`dtd-${cat}`).innerHTML = formatDelta(totals[cat].dtd);
         document.getElementById(`mtd-${cat}`).innerHTML = formatDelta(totals[cat].mtd);
         document.getElementById(`ytd-${cat}`).innerHTML = formatDelta(totals[cat].ytd);
-        document.getElementById(`rka-${cat}`).innerHTML = formatDelta(totals[cat].rkaDelta);
+        document.getElementById(`yoy-${cat}`).innerHTML = formatDelta(totals[cat].yoy);
     });
 
-    if(chartTrend) {
-        const colorMap = { 'DPK': '#0857C3', 'TABUNGAN': '#FF8F00', 'GIRO': '#307FE2', 'DEPOSITO': '#05CD99' };
-        const bgMap = { 'DPK': 'rgba(8, 87, 195, 0.1)', 'TABUNGAN': 'rgba(255, 143, 0, 0.1)', 'GIRO': 'rgba(48, 127, 226, 0.1)', 'DEPOSITO': 'rgba(5, 205, 153, 0.1)' };
+    // ================== GENERATE QUICK INSIGHT ==================
+    let dpkPct = (totals.dpk.rkaTarget !== 0) ? ((totals.dpk.saldo / totals.dpk.rkaTarget) * 100).toFixed(1) : 0;
+    let dpkSurplus = totals.dpk.saldo - totals.dpk.rkaTarget;
+    let surplusText = dpkSurplus >= 0 ? `surplus <b>Rp ${formatUangShort(dpkSurplus)}</b>` : `defisit <b>Rp ${formatUangShort(Math.abs(dpkSurplus))}</b>`;
 
-        const selProdukEl = document.getElementById('produkSelect');
-        document.getElementById('chart-title').innerText = `Grafik Trend Saldo - ${selProdukEl.options[selProdukEl.selectedIndex].text}`;
-        document.getElementById('chart-title').style.color = colorMap[selectedProduk];
+    let mtdVal = totals.dpk.mtd;
+    let mtdPct = (totals.dpk.saldo - mtdVal) !== 0 ? (mtdVal / (totals.dpk.saldo - mtdVal) * 100).toFixed(1) : 0;
+    let mtdStatus = mtdVal >= 0 ? "positif" : "negatif";
 
-        chartTrend.data.datasets[0].borderColor = colorMap[selectedProduk];
-        chartTrend.data.datasets[0].backgroundColor = bgMap[selectedProduk];
-        chartTrend.data.datasets[0].pointBackgroundColor = colorMap[selectedProduk];
-        chartTrend.options.plugins.datalabels.color = colorMap[selectedProduk];
+    let ytdPct = (totals.dpk.saldo - totals.dpk.ytd) !== 0 ? (totals.dpk.ytd / (totals.dpk.saldo - totals.dpk.ytd) * 100).toFixed(1) : 0;
+    let yoyPct = (totals.dpk.saldo - totals.dpk.yoy) !== 0 ? (totals.dpk.yoy / (totals.dpk.saldo - totals.dpk.yoy) * 100).toFixed(1) : 0;
 
-        let trendLabels = [];
-        let trendValues = [];
+    let monthName = new Date(rawDate || new Date()).toLocaleString('id-ID', { month: 'long' });
+    let segmentName = filterSegmen === 'ALL' ? 'Total Konsolidasi' : filterSegmen;
 
-        dpkKeys.forEach(k => {
-            let label = k.replace(/Posisi DPK|Saldo/ig, '').trim(); 
-            if(!label) label = k;
-            trendLabels.push(label);
+    let insightStr = `Kinerja DPK ${segmentName} telah mencapai <b>${dpkPct}%</b> dari target dengan ${surplusText}. Namun momentum bulan ${monthName} tercatat sedikit <b>${mtdStatus}</b>, yaitu MTD ${mtdVal < 0 ? '-' : '+'}Rp ${formatUangShort(Math.abs(mtdVal))} (${mtdVal > 0 ? '+' : ''}${mtdPct}%). Secara fundamental, kinerja secara keseluruhan masih <b>${totals.dpk.ytd >= 0 ? 'tumbuh' : 'menurun'}</b>, dengan YTD tercatat <b>${totals.dpk.ytd > 0 ? '+' : ''}${ytdPct}%</b> dan secara YoY tercatat <b>${totals.dpk.yoy > 0 ? '+' : ''}${yoyPct}%</b>.`;
 
-            let sumAtDate = 0;
-            globalDataArea.forEach(row => {
-                let valArea = safeStr(row[keyArea]).toUpperCase();
-                let valSection = keySection ? safeStr(row[keySection]).toUpperCase() : 'VOLUME';
-                let valRowLabel = keyRowLabel ? safeStr(row[keyRowLabel]).toLowerCase() : '';
-                let valParentStr = keyParent ? safeStr(row[keyParent]).toLowerCase() : '';
-                let valSegment = keySegment ? safeStr(row[keySegment]).toUpperCase() : 'NON-WHOLESALE';
+    document.getElementById('quick-insight-text').innerHTML = insightStr;
 
-                if (filterSegmen !== 'ALL') { if (!valSegment.includes(filterSegmen.toUpperCase())) return; } 
-                else { if (valSegment !== 'NON-WHOLESALE' && valSegment !== '') return; }
+    // ================== UPDATE 4 GRAFIK TIME SERIES ==================
+    if(chartTabungan && chartGiro && chartDeposito && chartDPK) {
+        chartTabungan.data.datasets[0].data = []; 
+        chartTabungan.data.datasets[1].data = []; 
+        chartTabungan.data.datasets[2].data = []; 
+        chartTabungan.data.datasets[3].data = []; 
+        chartTabungan.update();
 
-                let multiplier = 1; if (keyUnit && safeStr(row[keyUnit]).toLowerCase().includes('juta')) multiplier = 1000000;
-                let saldoAtDate = cleanNum(row[k], multiplier);
+        chartGiro.data.datasets[0].data = [];
+        chartGiro.data.datasets[1].data = [];
+        chartGiro.data.datasets[2].data = [];
+        chartGiro.data.datasets[3].data = [];
+        chartGiro.update();
 
-                if (valSection.includes('VOLUME') || valSection === '') {
-                    let matchAreaForTotals = false;
-                    if (currentMode === 'ALL') matchAreaForTotals = hasKanwilRow ? valArea.includes('TOTAL KANWIL') : true;
-                    else if (currentMode === 'AREA') matchAreaForTotals = (areaMapping[currentTarget]?.cabang || []).some(allowed => valArea.toLowerCase().includes(allowed));
-                    else matchAreaForTotals = valArea.toLowerCase().includes(currentTarget.toLowerCase());
+        chartDeposito.data.datasets[0].data = [];
+        chartDeposito.data.datasets[1].data = [];
+        chartDeposito.data.datasets[2].data = [];
+        chartDeposito.data.datasets[3].data = [];
+        chartDeposito.update();
 
-                    if (matchAreaForTotals && !valParentStr) {
-                        if (selectedProduk === 'DPK' && (valRowLabel.includes('tabungan') || valRowLabel.includes('giro') || valRowLabel.includes('deposito'))) sumAtDate += saldoAtDate;
-                        else if (selectedProduk === 'TABUNGAN' && valRowLabel.includes('tabungan')) sumAtDate += saldoAtDate;
-                        else if (selectedProduk === 'GIRO' && valRowLabel.includes('giro')) sumAtDate += saldoAtDate;
-                        else if (selectedProduk === 'DEPOSITO' && valRowLabel.includes('deposito')) sumAtDate += saldoAtDate;
-                    }
-                }
-            });
-            trendValues.push(sumAtDate);
-        });
-
-        chartTrend.data.labels = trendLabels;
-        chartTrend.data.datasets[0].data = trendValues;
-        chartTrend.update();
+        chartDPK.data.datasets[0].data = [];
+        chartDPK.data.datasets[1].data = [];
+        chartDPK.data.datasets[2].data = [];
+        chartDPK.data.datasets[3].data = [];
+        chartDPK.update();
     }
 
-    const sortTop5 = (objObj) => Object.keys(objObj).map(cab => ({ cabang: cab, saldo: objObj[cab] })).sort((a, b) => b.saldo - a.saldo).slice(0, 5); 
-    renderTop5List(sortTop5(cabangTabungan), 'list-top-tabungan', '#FF8F00');
-    renderTop5List(sortTop5(cabangGiro), 'list-top-giro', '#307FE2');
-    renderTop5List(sortTop5(cabangDeposito), 'list-top-deposito', '#05CD99');
+    // ================== LOGIKA SORTING TOP 5 (TERTINGGI & TERENDAH) ==================
+    const getTop5High = (objObj) => Object.keys(objObj).map(cab => ({ cabang: cab, saldo: objObj[cab] })).sort((a, b) => b.saldo - a.saldo).slice(0, 5); 
+    const getTop5Low = (objObj) => Object.keys(objObj).map(cab => ({ cabang: cab, saldo: objObj[cab] })).sort((a, b) => a.saldo - b.saldo).slice(0, 5); 
+
+    // Render 4 Tertinggi
+    renderTop5List(getTop5High(cabangData.tabungan), 'list-top-tabungan-high', '#2b3674', true);
+    renderTop5List(getTop5High(cabangData.giro), 'list-top-giro-high', '#2b3674', true);
+    renderTop5List(getTop5High(cabangData.deposito), 'list-top-deposito-high', '#2b3674', true);
+    renderTop5List(getTop5High(cabangData.dpk), 'list-top-dpk-high', '#2b3674', true);
+
+    // Render 4 Terendah
+    renderTop5List(getTop5Low(cabangData.tabungan), 'list-top-tabungan-low', '#ee5d50', false);
+    renderTop5List(getTop5Low(cabangData.giro), 'list-top-giro-low', '#ee5d50', false);
+    renderTop5List(getTop5Low(cabangData.deposito), 'list-top-deposito-low', '#ee5d50', false);
+    renderTop5List(getTop5Low(cabangData.dpk), 'list-top-dpk-low', '#ee5d50', false);
 }
 
 // ================= RENDER RMFT DASHBOARD =================
@@ -660,7 +816,6 @@ function renderRMFTDashboard() {
         payroll: mapKPI('new account payroll')
     };
 
-    // Bersihkan nama RM dari PN sebelum ditampilkan di profil untuk kecantikan UI
     let displayNamaRM = safeStr(rmData[kNama]);
 
     document.getElementById('rm-nama').innerText = displayNamaRM;

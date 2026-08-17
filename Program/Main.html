@@ -2,8 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <!-- INI BARIS AJAIBNYA: Memaksa HP membuka web dalam ukuran Desktop 1440px -->
-    <meta name="viewport" content="width=1440">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dashboard Kinerja - Enterprise System</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -23,9 +22,9 @@
             <div class="login-body">
                 <div id="login-error" class="error-msg"><i class="fa-solid fa-triangle-exclamation"></i> PN atau Password salah!</div>
                 <form onsubmit="handleLogin(event)">
-                    <div class="form-group"><label>Personal Number (PN)</label><input type="text" id="pnInput" required autocomplete="off"></div>
-                    <div class="form-group"><label>Password</label><input type="password" id="passInput" required></div>
-                    <button type="submit" class="btn-login"><i class="fa-solid fa-right-to-bracket"></i> Masuk Sistem</button>
+                    <div class="form-group"><label>Personal Number (PN)</label><input type="text" id="pnInput" required autocomplete="off" placeholder="Masukkan PN Anda..."></div>
+                    <div class="form-group"><label>Password</label><input type="password" id="passInput" required placeholder="Gunakan: BRI"></div>
+                    <button type="submit" class="btn-login" id="btnLoginBtn"><i class="fa-solid fa-right-to-bracket"></i> Masuk Sistem</button>
                 </form>
             </div>
         </div>
@@ -37,9 +36,9 @@
             <button class="mobile-menu-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
             <div class="logo-box"></div><h1>Dashboard Kinerja</h1><span class="subtitle">Enterprise System</span>
             <div class="profile-container">
-                <div class="profile-btn" onclick="toggleProfile()"><i class="fa-solid fa-user-shield"></i> <span class="admin-txt">Admin View</span></div>
+                <div class="profile-btn" onclick="toggleProfile()"><i class="fa-solid fa-user-shield"></i> <span class="admin-txt" id="display-nama-header">Memuat...</span></div>
                 <div class="dropdown-content" id="profileDropdown">
-                    <div class="dropdown-header"><p>Nama: <span>Admin</span></p><p>PN: <span>00123456</span></p></div>
+                    <div class="dropdown-header"><p>Nama: <span id="display-nama-dropdown">User</span></p><p>PN: <span id="display-pn-dropdown">0000000</span></p></div>
                     <a class="dropdown-menu-item" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket"></i> Keluar / Logout</a>
                 </div>
             </div>
@@ -54,69 +53,8 @@
                 <div class="sidebar-group">
                     <div class="sidebar-title">Kinerja Area</div>
                     <div class="sidebar-menu">
-                        <div class="parent-menu open" onclick="toggleMenu(this)">
-                            <div class="menu-left"><i class="fa-solid fa-chart-line icon-main" style="color: #0857C3;"></i> Kinerja Area</div>
-                            <i class="fa-solid fa-chevron-right caret"></i>
-                        </div>
-                        <ul class="sub-menu" style="display: block;">
-                            <li><a href="#" data-val="ALL" data-type="Kinerja Area" class="active" onclick="setMode(event, this, 'ALL', 'Kinerja Area')"><i class="fa-solid fa-sparkles icon-sub" style="color: #FF8F00;"></i> Dashboard Utama</a></li>
-                            
-                            <li class="has-nested">
-                                <a href="#" class="nested-toggler" onclick="toggleNested(event, this)">
-                                    <span><i class="fa-solid fa-chart-bar icon-sub" style="color: #05CD99;"></i> Daily Performance Area</span>
-                                    <i class="fa-solid fa-chevron-down nested-caret"></i>
-                                </a>
-                                <ul class="nested-menu">
-                                    <li><a href="#" data-val="AREA_1" data-type="Kinerja Area" onclick="setMode(event, this, 'AREA', 'Kinerja Area')">Area 1 Jember</a></li>
-                                    <li><a href="#" data-val="AREA_2" data-type="Kinerja Area" onclick="setMode(event, this, 'AREA', 'Kinerja Area')">Area 2 Probolinggo</a></li>
-                                    <li><a href="#" data-val="AREA_3" data-type="Kinerja Area" onclick="setMode(event, this, 'AREA', 'Kinerja Area')">Area 3 Malang</a></li>
-                                    <li><a href="#" data-val="AREA_4" data-type="Kinerja Area" onclick="setMode(event, this, 'AREA', 'Kinerja Area')">Area 4 Pacitan</a></li>
-                                    <li><a href="#" data-val="AREA_5" data-type="Kinerja Area" onclick="setMode(event, this, 'AREA', 'Kinerja Area')">Area 5 Kediri</a></li>
-                                    <li><a href="#" data-val="AREA_6" data-type="Kinerja Area" onclick="setMode(event, this, 'AREA', 'Kinerja Area')">Area 6 Madiun</a></li>
-                                </ul>
-                            </li>
-                            
-                            <li class="has-nested">
-                                <a href="#" class="nested-toggler" onclick="toggleNested(event, this)">
-                                    <span><i class="fa-solid fa-building-columns icon-sub" style="color: #307FE2;"></i> Daily Performance Cabang</span>
-                                    <i class="fa-solid fa-chevron-down nested-caret"></i>
-                                </a>
-                                <ul class="nested-menu">
-                                    <optgroup label="Area 1 Jember" style="padding: 5px 15px; font-size:0.75rem; color:#0857C3; font-weight:bold;"></optgroup>
-                                    <li><a href="#" data-val="banyuwangi" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Banyuwangi</a></li>
-                                    <li><a href="#" data-val="genteng" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Genteng</a></li>
-                                    <li><a href="#" data-val="bondowoso" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Bondowoso</a></li>
-                                    <li><a href="#" data-val="jember" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Jember</a></li>
-                                    
-                                    <optgroup label="Area 2 Probolinggo" style="padding: 5px 15px; font-size:0.75rem; color:#0857C3; font-weight:bold;"></optgroup>
-                                    <li><a href="#" data-val="situbondo" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Situbondo</a></li>
-                                    <li><a href="#" data-val="lumajang" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Lumajang</a></li>
-                                    <li><a href="#" data-val="probolinggo" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Probolinggo</a></li>
-                                    <li><a href="#" data-val="pasuruan" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Pasuruan</a></li>
-                                    
-                                    <optgroup label="Area 3 Malang" style="padding: 5px 15px; font-size:0.75rem; color:#0857C3; font-weight:bold;"></optgroup>
-                                    <li><a href="#" data-val="malang kawi" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Malang Kawi</a></li>
-                                    <li><a href="#" data-val="malang martadinata" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Malang Martadinata</a></li>
-                                    <li><a href="#" data-val="malang sutoyo" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Malang Sutoyo</a></li>
-                                    <li><a href="#" data-val="kepanjen" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Kepanjen</a></li>
-                                    <li><a href="#" data-val="batu" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Batu</a></li>
-
-                                    <optgroup label="Area 4 Pacitan" style="padding: 5px 15px; font-size:0.75rem; color:#0857C3; font-weight:bold;"></optgroup>
-                                    <li><a href="#" data-val="pacitan" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Pacitan</a></li>
-                                    <li><a href="#" data-val="trenggalek" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Trenggalek</a></li>
-                                    <li><a href="#" data-val="blitar" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Blitar</a></li>
-
-                                    <optgroup label="Area 5 Kediri" style="padding: 5px 15px; font-size:0.75rem; color:#0857C3; font-weight:bold;"></optgroup>
-                                    <li><a href="#" data-val="kediri" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Kediri</a></li>
-                                    <li><a href="#" data-val="pare" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Pare</a></li>
-                                    <li><a href="#" data-val="nganjuk" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Nganjuk</a></li>
-
-                                    <optgroup label="Area 6 Madiun" style="padding: 5px 15px; font-size:0.75rem; color:#0857C3; font-weight:bold;"></optgroup>
-                                    <li><a href="#" data-val="madiun" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Madiun</a></li>
-                                    <li><a href="#" data-val="magetan" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Magetan</a></li>
-                                    <li><a href="#" data-val="ponorogo" data-type="Kinerja Area" onclick="setMode(event, this, 'CABANG', 'Kinerja Area')">Ponorogo</a></li>
-                                </ul>
-                            </li>
+                        <ul class="sub-menu" style="display: block; padding-top:0;">
+                            <li><a href="#" data-val="ALL" data-type="Kinerja Area" class="active" onclick="setMode(event, this, 'ALL', 'Kinerja Area')"><i class="fa-solid fa-chart-line icon-sub" style="color: #0857C3;"></i> Kinerja Area</a></li>
                         </ul>
                     </div>
                 </div>
@@ -126,7 +64,7 @@
                     <div class="sidebar-title">Kinerja RMFT</div>
                     <div class="sidebar-menu">
                         <ul class="sub-menu" style="display: block; padding-top:0;">
-                            <li><a href="#" data-val="ALL" data-type="Kinerja RMFT" onclick="setMode(event, this, 'ALL', 'Kinerja RMFT')"><i class="fa-solid fa-user-tie icon-sub" style="color: #0857C3;"></i> Profil Kinerja RMFT</a></li>
+                            <li><a href="#" data-val="ALL" data-type="Kinerja RMFT" onclick="setMode(event, this, 'ALL', 'Kinerja RMFT')"><i class="fa-solid fa-user-tie icon-sub" style="color: #05CD99;"></i> Profil Kinerja RMFT</a></li>
                         </ul>
                     </div>
                 </div>
@@ -136,7 +74,7 @@
                     <div class="sidebar-title">Funding & Transaction</div>
                     <div class="sidebar-menu">
                         <div class="parent-menu" onclick="toggleMenu(this)">
-                            <div class="menu-left"><i class="fa-solid fa-wallet icon-main" style="color: #05CD99;"></i> Funding & Transaction</div>
+                            <div class="menu-left"><i class="fa-solid fa-wallet icon-main" style="color: #FF8F00;"></i> Funding & Transaction</div>
                             <i class="fa-solid fa-chevron-right caret"></i>
                         </div>
                         <ul class="sub-menu">
@@ -186,16 +124,6 @@
                                     <option value="Mikro">Mikro</option>
                                 </select>
                             </div>
-                            
-                            <div class="filter-item">
-                                <label class="text-label">PRODUK GRAFIK</label>
-                                <select id="produkSelect" onchange="renderAreaDashboard()">
-                                    <option value="DPK">DPK (TOTAL)</option>
-                                    <option value="TABUNGAN">Tabungan</option>
-                                    <option value="GIRO">Giro</option>
-                                    <option value="DEPOSITO">Deposito</option>
-                                </select>
-                            </div>
 
                             <div class="filter-item">
                                 <label class="text-label">PERIODE</label>
@@ -212,7 +140,7 @@
                                 <div class="stat-item"><span>DTD</span><div id="dtd-dpk" class="neutral">-</div></div>
                                 <div class="stat-item"><span>MTD</span><div id="mtd-dpk" class="neutral">-</div></div>
                                 <div class="stat-item"><span>YTD</span><div id="ytd-dpk" class="neutral">-</div></div>
-                                <div class="stat-item"><span>RKA</span><div id="rka-dpk" class="neutral">-</div></div>
+                                <div class="stat-item"><span>YOY</span><div id="yoy-dpk" class="neutral">-</div></div>
                             </div>
                         </div>
                         
@@ -223,7 +151,7 @@
                                 <div class="stat-item"><span>DTD</span><div id="dtd-tabungan" class="neutral">-</div></div>
                                 <div class="stat-item"><span>MTD</span><div id="mtd-tabungan" class="neutral">-</div></div>
                                 <div class="stat-item"><span>YTD</span><div id="ytd-tabungan" class="neutral">-</div></div>
-                                <div class="stat-item"><span>RKA</span><div id="rka-tabungan" class="neutral">-</div></div>
+                                <div class="stat-item"><span>YOY</span><div id="yoy-tabungan" class="neutral">-</div></div>
                             </div>
                         </div>
 
@@ -234,7 +162,7 @@
                                 <div class="stat-item"><span>DTD</span><div id="dtd-giro" class="neutral">-</div></div>
                                 <div class="stat-item"><span>MTD</span><div id="mtd-giro" class="neutral">-</div></div>
                                 <div class="stat-item"><span>YTD</span><div id="ytd-giro" class="neutral">-</div></div>
-                                <div class="stat-item"><span>RKA</span><div id="rka-giro" class="neutral">-</div></div>
+                                <div class="stat-item"><span>YOY</span><div id="yoy-giro" class="neutral">-</div></div>
                             </div>
                         </div>
 
@@ -245,38 +173,80 @@
                                 <div class="stat-item"><span>DTD</span><div id="dtd-deposito" class="neutral">-</div></div>
                                 <div class="stat-item"><span>MTD</span><div id="mtd-deposito" class="neutral">-</div></div>
                                 <div class="stat-item"><span>YTD</span><div id="ytd-deposito" class="neutral">-</div></div>
-                                <div class="stat-item"><span>RKA</span><div id="rka-deposito" class="neutral">-</div></div>
+                                <div class="stat-item"><span>YOY</span><div id="yoy-deposito" class="neutral">-</div></div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="charts-grid" style="grid-template-columns: 1fr;">
-                        <div class="chart-card">
-                            <h3 id="chart-title" style="color:#0857C3; font-weight:800; font-size: 1.2rem;">Grafik Trend Saldo</h3>
-                            <div class="chart-container" style="height: 320px;"><canvas id="chartTrend"></canvas></div>
+                    <!-- ======= QUICK INSIGHT BOX ======= -->
+                    <div class="quick-insight-container">
+                        <h3><i class="fa-solid fa-lightbulb" style="color: #FF8F00;"></i> Quick Insight</h3>
+                        <div class="quick-insight-box" id="quick-insight-text">
+                            Menghitung insight...
                         </div>
                     </div>
 
-                    <div class="top5-grid">
-                        <div class="top5-card">
-                            <div class="top5-header" style="color:#FF8F00;">TOP 5 KC - Saldo Tabungan Tertinggi</div>
-                            <ul class="top5-list" id="list-top-tabungan">
-                                <li style="justify-content:center; color:#999;">Menunggu data...</li>
-                            </ul>
+                    <!-- ======= GRAFIK 4 KOTAK TIME SERIES ======= -->
+                    <div class="charts-grid-4">
+                        <div class="chart-card">
+                            <h3 style="color:#307FE2;"><i class="fa-solid fa-chart-line"></i> Trend Saldo Tabungan</h3>
+                            <div class="chart-container"><canvas id="chartTabungan"></canvas></div>
                         </div>
-                        <div class="top5-card">
-                            <div class="top5-header" style="color:#307FE2;">TOP 5 KC - Saldo Giro Tertinggi</div>
-                            <ul class="top5-list" id="list-top-giro">
-                                <li style="justify-content:center; color:#999;">Menunggu data...</li>
-                            </ul>
+                        <div class="chart-card">
+                            <h3 style="color:#307FE2;"><i class="fa-solid fa-chart-line"></i> Trend Saldo Giro</h3>
+                            <div class="chart-container"><canvas id="chartGiro"></canvas></div>
                         </div>
-                        <div class="top5-card">
-                            <div class="top5-header" style="color:#05CD99;">TOP 5 KC - Saldo Deposito Tertinggi</div>
-                            <ul class="top5-list" id="list-top-deposito">
-                                <li style="justify-content:center; color:#999;">Menunggu data...</li>
-                            </ul>
+                        <div class="chart-card">
+                            <h3 style="color:#307FE2;"><i class="fa-solid fa-chart-line"></i> Trend Saldo Deposito</h3>
+                            <div class="chart-container"><canvas id="chartDeposito"></canvas></div>
+                        </div>
+                        <div class="chart-card">
+                            <h3 style="color:#307FE2;"><i class="fa-solid fa-chart-line"></i> Trend Saldo DPK</h3>
+                            <div class="chart-container"><canvas id="chartDPK"></canvas></div>
                         </div>
                     </div>
+                    
+
+                    <!-- ======= TOP 5 TERTINGGI (4 KOLOM) ======= -->
+                    <div class="top5-grid-4">
+                        <div class="top5-card">
+                            <div class="top5-header" style="color:#05CD99;"><i class="fa-solid fa-arrow-trend-up"></i> TOP 5 Tertinggi - Tabungan</div>
+                            <ul class="top5-list" id="list-top-tabungan-high"><li style="justify-content:center; color:#999;">Menunggu data...</li></ul>
+                        </div>
+                        <div class="top5-card">
+                            <div class="top5-header" style="color:#05CD99;"><i class="fa-solid fa-arrow-trend-up"></i> TOP 5 Tertinggi - Giro</div>
+                            <ul class="top5-list" id="list-top-giro-high"><li style="justify-content:center; color:#999;">Menunggu data...</li></ul>
+                        </div>
+                        <div class="top5-card">
+                            <div class="top5-header" style="color:#05CD99;"><i class="fa-solid fa-arrow-trend-up"></i> TOP 5 Tertinggi - Deposito</div>
+                            <ul class="top5-list" id="list-top-deposito-high"><li style="justify-content:center; color:#999;">Menunggu data...</li></ul>
+                        </div>
+                        <div class="top5-card">
+                            <div class="top5-header" style="color:#05CD99;"><i class="fa-solid fa-arrow-trend-up"></i> TOP 5 Tertinggi - DPK</div>
+                            <ul class="top5-list" id="list-top-dpk-high"><li style="justify-content:center; color:#999;">Menunggu data...</li></ul>
+                        </div>
+                    </div>
+
+                    <!-- ======= TOP 5 TERENDAH (4 KOLOM) ======= -->
+                    <div class="top5-grid-4">
+                        <div class="top5-card">
+                            <div class="top5-header" style="color:#EE5D50;"><i class="fa-solid fa-arrow-trend-down"></i> TOP 5 Terendah - Tabungan</div>
+                            <ul class="top5-list" id="list-top-tabungan-low"><li style="justify-content:center; color:#999;">Menunggu data...</li></ul>
+                        </div>
+                        <div class="top5-card">
+                            <div class="top5-header" style="color:#EE5D50;"><i class="fa-solid fa-arrow-trend-down"></i> TOP 5 Terendah - Giro</div>
+                            <ul class="top5-list" id="list-top-giro-low"><li style="justify-content:center; color:#999;">Menunggu data...</li></ul>
+                        </div>
+                        <div class="top5-card">
+                            <div class="top5-header" style="color:#EE5D50;"><i class="fa-solid fa-arrow-trend-down"></i> TOP 5 Terendah - Deposito</div>
+                            <ul class="top5-list" id="list-top-deposito-low"><li style="justify-content:center; color:#999;">Menunggu data...</li></ul>
+                        </div>
+                        <div class="top5-card">
+                            <div class="top5-header" style="color:#EE5D50;"><i class="fa-solid fa-arrow-trend-down"></i> TOP 5 Terendah - DPK</div>
+                            <ul class="top5-list" id="list-top-dpk-low"><li style="justify-content:center; color:#999;">Menunggu data...</li></ul>
+                        </div>
+                    </div>
+
                 </div>
 
                 <!-- ================= KONTEN 2: KINERJA RMFT ================= -->
